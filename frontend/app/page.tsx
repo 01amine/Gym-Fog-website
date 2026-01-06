@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ShoppingCart, Play, Instagram, Facebook, MessageCircle, X, Check, Menu, Plus, Minus, Loader2 } from "lucide-react"
+import { ShoppingCart, Play, Instagram, Facebook, MessageCircle, X, Menu, Plus, Minus, Loader2 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
@@ -18,14 +18,14 @@ import { toast } from "sonner"
 export default function Page() {
   const [isLoaded, setIsLoaded] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState("ALL")
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [whatsappMessage, setWhatsappMessage] = useState("")
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [cartOpen, setCartOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
-  const { items, totalItems, totalPrice, addItem, removeItem, updateQuantity, getItemQuantity } = useCart()
+  const { items, totalItems, totalPrice, addItem, removeItem, updateQuantity } = useCart()
 
   // Fetch products and categories from API
   useEffect(() => {
@@ -58,15 +58,14 @@ export default function Page() {
     return products.filter((p) => p.category.toUpperCase() === selectedCategory)
   }, [selectedCategory, products])
 
-  const openWhatsApp = (productName?: string) => {
-    const message = productName
-      ? `Hello GYM FOG! I am interested in the ${productName}. Can you give me more details?`
-      : "Hello GYM FOG! I'd like to inquire about your gear and gym memberships."
-    window.open(`https://wa.me/213000000000?text=${encodeURIComponent(message)}`, "_blank")
+  const openWhatsApp = (message?: string) => {
+    const text = message || "Hello GYM FOG! I'd like to inquire about your gear."
+    window.open(`https://wa.me/213000000000?text=${encodeURIComponent(text)}`, "_blank")
   }
 
-  const handleAddToCart = (product: Product, e?: React.MouseEvent) => {
-    e?.stopPropagation()
+  const handleAddToCart = (product: Product, e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
     addItem(product)
     toast.success(`${product.title} added to cart`)
   }
@@ -75,11 +74,12 @@ export default function Page() {
     if (product.image_urls && product.image_urls.length > 0) {
       return product.image_urls[0]
     }
-    return `/placeholder.jpg?height=600&width=600&query=${product.title}`
+    return `/placeholder.jpg`
   }
 
   return (
     <div className="flex flex-col min-h-screen bg-black overflow-x-hidden">
+      {/* Loading Screen */}
       <AnimatePresence>
         {!isLoaded && (
           <motion.div
@@ -91,7 +91,7 @@ export default function Page() {
               initial={{ scale: 0.8, rotate: -10 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
-              className="w-48 h-48 relative overflow-hidden"
+              className="w-32 h-32 sm:w-48 sm:h-48 relative overflow-hidden"
             >
               <img src="/gymfog-logo.jpeg" alt="GYM FOG Logo" className="w-full h-full object-cover" />
             </motion.div>
@@ -99,39 +99,38 @@ export default function Page() {
         )}
       </AnimatePresence>
 
+      {/* Header - Mobile First */}
       <motion.header
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ delay: 0.5, duration: 0.8, ease: "circOut" }}
-        className="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-md border-b border-white/10"
+        className="fixed top-0 w-full z-50 bg-black/90 backdrop-blur-md border-b border-white/10"
       >
-        <div className="container mx-auto px-4 h-20 grid grid-cols-3 items-center">
-          <div className="flex items-center">
-            <div className="hidden md:flex items-center gap-6 text-[10px] font-bold tracking-widest">
-              <a href="#shop" className="hover:text-accent transition-colors">
-                SHOP
-              </a>
-              <a href="#story" className="hover:text-accent transition-colors">
-                OUR STORY
-              </a>
-            </div>
+        <div className="container mx-auto px-4 h-16 sm:h-20 flex items-center justify-between">
+          {/* Desktop Nav - Left */}
+          <div className="hidden md:flex items-center gap-6 text-[10px] font-bold tracking-widest flex-1">
+            <a href="#shop" className="hover:text-accent transition-colors">SHOP</a>
+            <a href="#story" className="hover:text-accent transition-colors">OUR STORY</a>
+            <a href="#contact" className="hover:text-accent transition-colors">CONTACT</a>
           </div>
 
-          <div className="flex items-center justify-center gap-3 group cursor-pointer">
-            <div className="w-10 h-10 relative overflow-hidden border border-white/20 group-hover:scale-110 transition-transform duration-300">
+          {/* Logo - Center */}
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 relative overflow-hidden border border-white/20 group-hover:scale-110 transition-transform duration-300">
               <img src="/gymfog-logo.jpeg" alt="GYM FOG" className="w-full h-full object-cover" />
             </div>
-            <h1 className="text-xl md:text-2xl font-display italic tracking-tighter group-hover:text-accent transition-colors">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-display italic tracking-tighter group-hover:text-accent transition-colors">
               GYM FOG
             </h1>
-          </div>
+          </Link>
 
-          <div className="flex items-center justify-end gap-4">
+          {/* Right Actions */}
+          <div className="flex items-center gap-2 sm:gap-4 flex-1 justify-end">
             {/* Cart Button */}
             <Sheet open={cartOpen} onOpenChange={setCartOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="hover:text-accent relative">
-                  <ShoppingCart className="w-6 h-6" />
+                <Button variant="ghost" size="icon" className="hover:text-accent relative h-10 w-10">
+                  <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
                   {totalItems > 0 && (
                     <span className="absolute -top-1 -right-1 bg-accent text-black text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
                       {totalItems}
@@ -139,9 +138,9 @@ export default function Page() {
                   )}
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="bg-black border-l border-white/10 w-[350px] sm:w-[400px]">
-                <SheetHeader className="text-left mb-6">
-                  <SheetTitle className="text-2xl italic font-display">YOUR CART</SheetTitle>
+              <SheetContent side="right" className="bg-black border-l border-white/10 w-full sm:w-[400px] p-4 sm:p-6">
+                <SheetHeader className="text-left mb-4 sm:mb-6">
+                  <SheetTitle className="text-xl sm:text-2xl italic font-display">YOUR CART</SheetTitle>
                 </SheetHeader>
                 {items.length === 0 ? (
                   <div className="text-center text-muted-foreground py-12">
@@ -152,22 +151,22 @@ export default function Page() {
                   <div className="flex flex-col h-[calc(100%-80px)]">
                     <div className="flex-1 overflow-auto space-y-4">
                       {items.map((item) => (
-                        <div key={item.product.id} className="flex gap-4 border-b border-white/10 pb-4">
-                          <div className="w-20 h-20 bg-muted overflow-hidden">
+                        <div key={item.product.id} className="flex gap-3 sm:gap-4 border-b border-white/10 pb-4">
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-muted overflow-hidden flex-shrink-0">
                             <img
                               src={getProductImageUrl(item.product)}
                               alt={item.product.title}
                               className="w-full h-full object-cover"
                             />
                           </div>
-                          <div className="flex-1">
-                            <h4 className="font-bold text-sm">{item.product.title}</h4>
-                            <p className="text-accent text-sm">{item.product.price_dzd} DA</p>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-bold text-sm truncate">{item.product.title}</h4>
+                            <p className="text-accent text-sm">{item.product.price_dzd.toLocaleString()} DA</p>
                             <div className="flex items-center gap-2 mt-2">
                               <Button
                                 variant="outline"
                                 size="icon"
-                                className="h-6 w-6 bg-transparent"
+                                className="h-7 w-7 bg-transparent"
                                 onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
                               >
                                 <Minus className="h-3 w-3" />
@@ -176,7 +175,7 @@ export default function Page() {
                               <Button
                                 variant="outline"
                                 size="icon"
-                                className="h-6 w-6 bg-transparent"
+                                className="h-7 w-7 bg-transparent"
                                 onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
                               >
                                 <Plus className="h-3 w-3" />
@@ -184,7 +183,7 @@ export default function Page() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-6 w-6 ml-auto text-red-500 hover:text-red-400"
+                                className="h-7 w-7 ml-auto text-red-500 hover:text-red-400"
                                 onClick={() => removeItem(item.product.id)}
                               >
                                 <X className="h-3 w-3" />
@@ -197,7 +196,7 @@ export default function Page() {
                     <div className="border-t border-white/10 pt-4 mt-4">
                       <div className="flex justify-between text-lg font-bold mb-4">
                         <span>Total:</span>
-                        <span className="text-accent">{totalPrice} DA</span>
+                        <span className="text-accent">{totalPrice.toLocaleString()} DA</span>
                       </div>
                       <Link href="/checkout" onClick={() => setCartOpen(false)}>
                         <Button className="w-full bg-accent text-black hover:bg-white h-12 font-display italic text-lg">
@@ -210,34 +209,40 @@ export default function Page() {
               </SheetContent>
             </Sheet>
 
-            <Sheet>
+            {/* Mobile Menu */}
+            <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="hover:text-accent">
-                  <Menu className="w-6 h-6" />
+                <Button variant="ghost" size="icon" className="hover:text-accent h-10 w-10 md:hidden">
+                  <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="bg-black border-l border-white/10 w-[300px]">
-                <SheetHeader className="text-left mb-12">
-                  <SheetTitle className="text-4xl italic font-display">NAVIGATION</SheetTitle>
+              <SheetContent side="right" className="bg-black border-l border-white/10 w-full sm:w-[300px]">
+                <SheetHeader className="text-left mb-8">
+                  <SheetTitle className="text-3xl sm:text-4xl italic font-display">MENU</SheetTitle>
                 </SheetHeader>
-                <nav className="flex flex-col gap-8 text-2xl font-display italic">
-                  <a href="#shop" className="hover:text-accent transition-all hover:translate-x-2">
+                <nav className="flex flex-col gap-6 text-xl sm:text-2xl font-display italic">
+                  <a href="#shop" onClick={() => setMenuOpen(false)} className="hover:text-accent transition-all hover:translate-x-2">
                     SHOP
                   </a>
-                  <a href="#story" className="hover:text-accent transition-all hover:translate-x-2">
+                  <a href="#story" onClick={() => setMenuOpen(false)} className="hover:text-accent transition-all hover:translate-x-2">
                     OUR STORY
                   </a>
-                  <a href="#contact" className="hover:text-accent transition-all hover:translate-x-2">
+                  <a href="#contact" onClick={() => setMenuOpen(false)} className="hover:text-accent transition-all hover:translate-x-2">
                     CONTACT US
                   </a>
-                  <div className="pt-8 border-t border-white/10">
-                    <p className="text-[10px] tracking-[0.2em] font-bold text-muted-foreground mb-4">CATEGORIES</p>
-                    <div className="flex flex-col gap-4">
+                  <div className="pt-6 border-t border-white/10">
+                    <p className="text-[10px] tracking-[0.2em] font-bold text-muted-foreground mb-4 not-italic">CATEGORIES</p>
+                    <div className="flex flex-col gap-3">
                       {categoryNames.map((cat) => (
                         <button
                           key={cat}
-                          onClick={() => setSelectedCategory(cat)}
-                          className="text-left hover:text-accent transition-colors"
+                          onClick={() => {
+                            setSelectedCategory(cat)
+                            setMenuOpen(false)
+                          }}
+                          className={`text-left text-lg hover:text-accent transition-colors ${
+                            selectedCategory === cat ? 'text-accent' : ''
+                          }`}
                         >
                           {cat}
                         </button>
@@ -251,17 +256,18 @@ export default function Page() {
         </div>
       </motion.header>
 
-      <section className="relative h-screen flex items-center justify-center overflow-hidden pt-20">
+      {/* Hero Section - Mobile First */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
         <div className="absolute inset-0 z-0">
           <motion.img
             src="/boxing-training-in-dark-gym-intense.jpg"
             alt="Hero background"
-            className="w-full h-full object-cover opacity-60 grayscale hover:grayscale-0 transition-all duration-700"
+            className="w-full h-full object-cover opacity-60 grayscale"
             initial={{ scale: 1.2, filter: "grayscale(100%) brightness(0.2)" }}
             animate={{ scale: 1, filter: "grayscale(100%) brightness(0.6)" }}
             transition={{ duration: 2, ease: "easeOut" }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
         </div>
 
         <div className="container relative z-10 px-4 text-center">
@@ -269,7 +275,7 @@ export default function Page() {
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.8, duration: 1, ease: "backOut" }}
-            className="text-[12vw] leading-[0.8] font-display italic mb-6 animate-in fade-in slide-in-from-bottom-12 duration-1000"
+            className="text-[10vw] sm:text-[8vw] lg:text-[7vw] leading-[0.85] font-display italic mb-6"
           >
             TESTED BY FIGHTERS
             <br />
@@ -279,11 +285,11 @@ export default function Page() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 1.2, duration: 0.5 }}
-            className="flex flex-col md:flex-row items-center justify-center gap-4 mt-8"
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-6 sm:mt-8"
           >
             <Button
               size="lg"
-              className="bg-primary text-white hover:bg-accent hover:text-black text-xl px-12 h-16 font-display italic"
+              className="w-full sm:w-auto bg-primary text-white hover:bg-accent hover:text-black text-base sm:text-xl px-8 sm:px-12 h-12 sm:h-16 font-display italic"
               onClick={() => document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' })}
             >
               SHOP COMBAT GEAR
@@ -291,43 +297,46 @@ export default function Page() {
             <Button
               size="lg"
               variant="outline"
-              className="border-2 border-white text-white hover:bg-white hover:text-black text-xl px-12 h-16 font-display italic bg-transparent"
+              className="w-full sm:w-auto border-2 border-white text-white hover:bg-white hover:text-black text-base sm:text-xl px-8 sm:px-12 h-12 sm:h-16 font-display italic bg-transparent"
             >
-              <Play className="mr-2 h-5 w-5 fill-current" /> WATCH BRAND STORY
+              <Play className="mr-2 h-4 w-4 sm:h-5 sm:w-5 fill-current" /> BRAND STORY
             </Button>
           </motion.div>
         </div>
 
-        <div className="absolute bottom-0 w-full bg-accent text-black py-2 overflow-hidden whitespace-nowrap border-y border-black font-bold text-sm">
+        {/* Scrolling Banner */}
+        <div className="absolute bottom-0 w-full bg-accent text-black py-2 overflow-hidden whitespace-nowrap border-y border-black font-bold text-xs sm:text-sm">
           <div className="flex animate-[scroll_20s_linear_infinite]">
             {[...Array(10)].map((_, i) => (
-              <span key={i} className="mx-8">
-                DURABILITY * PERFORMANCE * REAL COMBAT CREDIBILITY * FAIR PRICING * BUILT BY FIGHTERS *
+              <span key={i} className="mx-4 sm:mx-8">
+                DURABILITY * PERFORMANCE * COMBAT TESTED * FAIR PRICING * BUILT BY FIGHTERS *
               </span>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="shop" className="py-24 bg-black overflow-hidden">
-        <div className="container mx-auto px-4 mb-12">
+      {/* Shop Section - Mobile First */}
+      <section id="shop" className="py-12 sm:py-24 bg-black overflow-hidden">
+        <div className="container mx-auto px-4 mb-6 sm:mb-12">
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="flex flex-col md:flex-row md:items-end justify-between gap-8"
+            className="flex flex-col gap-4 sm:gap-8"
           >
             <div>
-              <p className="text-accent font-bold mb-2 tracking-[0.2em]">EQUIPMENT</p>
-              <h3 className="text-6xl italic">GEAR UP FOR WAR</h3>
+              <p className="text-accent font-bold mb-1 sm:mb-2 tracking-[0.2em] text-xs sm:text-sm">EQUIPMENT</p>
+              <h3 className="text-3xl sm:text-5xl lg:text-6xl italic">GEAR UP FOR WAR</h3>
             </div>
-            <div className="flex flex-wrap gap-2">
+            {/* Category Filter - Horizontal Scroll on Mobile */}
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap">
               {categoryNames.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-2 text-xs font-bold border transition-all ${
-                    selectedCategory === cat ? "bg-accent text-black border-accent" : "bg-transparent border-white/10"
+                  className={`flex-shrink-0 px-3 sm:px-4 py-2 text-xs font-bold border transition-all ${
+                    selectedCategory === cat ? "bg-accent text-black border-accent" : "bg-transparent border-white/10 hover:border-white/30"
                   }`}
                 >
                   {cat}
@@ -348,124 +357,132 @@ export default function Page() {
           </div>
         ) : (
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
               {filteredProducts.map((product) => (
-                <Card
-                  key={product.id}
-                  className="group bg-muted border-none overflow-hidden hover:ring-2 hover:ring-accent transition-all duration-300 cursor-pointer"
-                  onClick={() => setSelectedProduct(product)}
-                >
-                  <CardContent className="p-0 aspect-square relative overflow-hidden">
-                    <img
-                      src={getProductImageUrl(product)}
-                      alt={product.title}
-                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500"
-                    />
-                    <div className="absolute top-4 left-4">
-                      <Badge className="bg-primary text-white rounded-none italic font-display">
-                        {product.category}
-                      </Badge>
-                    </div>
-                    {product.stock_quantity <= 0 && (
-                      <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
-                        <span className="text-red-500 font-bold text-lg">OUT OF STOCK</span>
+                <Link href={`/product/${product.id}`} key={product.id}>
+                  <Card className="group bg-muted border-none overflow-hidden hover:ring-2 hover:ring-accent transition-all duration-300 cursor-pointer h-full">
+                    <CardContent className="p-0 aspect-square relative overflow-hidden">
+                      <img
+                        src={getProductImageUrl(product)}
+                        alt={product.title}
+                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500"
+                      />
+                      <div className="absolute top-2 left-2 sm:top-4 sm:left-4">
+                        <Badge className="bg-primary text-white rounded-none italic font-display text-[10px] sm:text-xs px-2 py-1">
+                          {product.category}
+                        </Badge>
                       </div>
-                    )}
-                  </CardContent>
-                  <CardFooter className="flex items-center justify-between p-6 bg-muted/50 backdrop-blur-sm">
-                    <div>
-                      <h4 className="font-display italic text-xl">{product.title}</h4>
-                      <p className="text-accent font-bold">{product.price_dzd} DA</p>
-                    </div>
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      className="border-white/20 hover:bg-accent hover:text-black bg-transparent"
-                      onClick={(e) => handleAddToCart(product, e)}
-                      disabled={product.stock_quantity <= 0}
-                    >
-                      <ShoppingCart className="h-4 w-4" />
-                    </Button>
-                  </CardFooter>
-                </Card>
+                      {product.stock_quantity <= 0 && (
+                        <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+                          <span className="text-red-500 font-bold text-xs sm:text-lg">OUT OF STOCK</span>
+                        </div>
+                      )}
+                    </CardContent>
+                    <CardFooter className="flex items-center justify-between p-3 sm:p-6 bg-muted/50 backdrop-blur-sm">
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-display italic text-sm sm:text-xl truncate">{product.title}</h4>
+                        <p className="text-accent font-bold text-xs sm:text-base">{product.price_dzd.toLocaleString()} DA</p>
+                      </div>
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        className="border-white/20 hover:bg-accent hover:text-black bg-transparent h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 ml-2"
+                        onClick={(e) => handleAddToCart(product, e)}
+                        disabled={product.stock_quantity <= 0}
+                      >
+                        <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4" />
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </Link>
               ))}
             </div>
           </div>
         )}
       </section>
 
-      <section id="story" className="py-24 bg-muted relative overflow-hidden">
-        <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
+      {/* Story Section - Mobile First with Updated Bio */}
+      <section id="story" className="py-12 sm:py-24 bg-muted relative overflow-hidden">
+        <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 items-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
             whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
             viewport={{ once: true }}
-            className="relative aspect-[4/5] md:aspect-square overflow-hidden border-2 border-accent"
+            className="relative w-full max-w-sm mx-auto md:max-w-none aspect-[3/4] overflow-hidden border-2 border-accent"
           >
-            <img src="/images/chikhb.png" alt="Remilaoui Ibrahim" className="w-full h-full object-cover" />
-            <div className="absolute bottom-0 left-0 bg-accent text-black p-4 font-display italic text-2xl">
-              FOUNDER: REMILAOUI IBRAHIM
+            <img src="/images/chikhb.png" alt="Coach Remilaoui Ibrahim" className="w-full h-full object-cover" />
+            <div className="absolute bottom-0 left-0 right-0 bg-accent text-black p-3 sm:p-4 font-display italic text-lg sm:text-xl text-center md:text-left">
+              COACH REMILAOUI IBRAHIM
             </div>
           </motion.div>
-          <motion.div initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-            <h3 className="text-5xl italic mb-6">
-              TESTED BY
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="text-center md:text-left"
+          >
+            <h3 className="text-3xl sm:text-4xl lg:text-5xl italic mb-4 sm:mb-6">
+              BUILT BY
               <br />
-              <span className="text-accent">A TRUE FIGHTER.</span>
+              <span className="text-accent">A TRUE CHAMPION.</span>
             </h3>
-            <p className="text-lg text-muted-foreground leading-relaxed mb-8 font-medium">
-              Remilaoui Ibrahim, a National Vice-Champion, founded GYM FOG with a simple mission: to provide the gear he
-              wished he had when starting. Every product is personally vetted for durability and performance in the heat
-              of battle.
+            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed font-medium">
+              Coach Remilaoui Ibrahim is more than just a fighter - he's a mentor who has shaped countless champions
+              in the Algerian combat sports scene. With years of experience in the ring and on the mat, he understands
+              what fighters truly need. GYM FOG was born from his passion to elevate combat sports in Algeria,
+              providing premium gear that meets the demanding standards of real fighters. Every product is tested
+              and approved by champions, for champions.
             </p>
           </motion.div>
         </div>
       </section>
 
-      <section id="contact" className="py-24 bg-black border-t border-white/10">
+      {/* Contact Section - Mobile First */}
+      <section id="contact" className="py-12 sm:py-24 bg-black border-t border-white/10">
         <div className="container mx-auto px-4 max-w-2xl">
-          <div className="text-center mb-12">
-            <h3 className="text-5xl italic mb-2">WHATSAPP US</h3>
-            <p className="text-muted-foreground font-bold tracking-widest text-xs">DIRECT LINE TO THE HQ</p>
+          <div className="text-center mb-8 sm:mb-12">
+            <h3 className="text-3xl sm:text-5xl italic mb-2">CONTACT US</h3>
+            <p className="text-muted-foreground font-bold tracking-widest text-[10px] sm:text-xs">DIRECT LINE TO THE HQ</p>
           </div>
           <div className="space-y-4">
             <Textarea
               placeholder="WRITE YOUR MESSAGE HERE..."
-              className="min-h-[150px] bg-muted border-none text-lg p-6 focus-visible:ring-accent"
+              className="min-h-[120px] sm:min-h-[150px] bg-muted border-none text-base sm:text-lg p-4 sm:p-6 focus-visible:ring-accent"
               value={whatsappMessage}
               onChange={(e) => setWhatsappMessage(e.target.value)}
             />
             <Button
               size="lg"
-              className="w-full bg-accent text-black hover:bg-white text-xl h-16 font-display italic"
+              className="w-full bg-accent text-black hover:bg-white text-base sm:text-xl h-12 sm:h-16 font-display italic"
               onClick={() => openWhatsApp(whatsappMessage)}
             >
+              <MessageCircle className="w-5 h-5 mr-2" />
               SEND WHATSAPP MESSAGE
             </Button>
           </div>
         </div>
       </section>
 
-      <footer className="bg-muted border-t border-white/10 pt-24 pb-12">
+      {/* Footer - Mobile First */}
+      <footer className="bg-muted border-t border-white/10 pt-12 sm:pt-24 pb-8 sm:pb-12">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
-            <div className="md:col-span-2">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 relative overflow-hidden border border-white/10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12 mb-8 sm:mb-16">
+            <div className="sm:col-span-2 text-center sm:text-left">
+              <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6 justify-center sm:justify-start">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 relative overflow-hidden border border-white/10">
                   <img src="/gymfog-logo.jpeg" alt="GYM FOG" className="w-full h-full object-cover" />
                 </div>
-                <h2 className="text-4xl font-display italic">GYM FOG</h2>
+                <h2 className="text-2xl sm:text-4xl font-display italic">GYM FOG</h2>
               </div>
-              <p className="text-muted-foreground max-w-sm mb-8">
-                The premier combat sports brand for the dedicated. Tested by fighters, built for the grind. Based in
-                Algeria.
+              <p className="text-muted-foreground max-w-sm mb-6 sm:mb-8 mx-auto sm:mx-0 text-sm sm:text-base">
+                The premier combat sports brand for the dedicated. Tested by fighters, built for the grind. Based in Algeria.
               </p>
-              <div className="flex gap-4">
+              <div className="flex gap-4 justify-center sm:justify-start">
                 <Button variant="ghost" size="icon" className="hover:text-accent">
-                  <Instagram className="h-6 w-6" />
+                  <Instagram className="h-5 w-5 sm:h-6 sm:w-6" />
                 </Button>
                 <Button variant="ghost" size="icon" className="hover:text-accent">
-                  <Facebook className="h-6 w-6" />
+                  <Facebook className="h-5 w-5 sm:h-6 sm:w-6" />
                 </Button>
                 <Button
                   variant="ghost"
@@ -474,165 +491,41 @@ export default function Page() {
                   onClick={() => openWhatsApp()}
                   title="Contact via WhatsApp"
                 >
-                  <MessageCircle className="h-6 w-6" />
+                  <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />
                 </Button>
               </div>
             </div>
-            <div>
-              <h5 className="font-bold mb-6 text-accent">RESOURCES</h5>
-              <ul className="space-y-4 text-sm font-medium">
-                <li>
-                  <a href="#" className="hover:text-accent">
-                    SIZE GUIDES
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-accent">
-                    SHIPPING POLICY
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-accent">
-                    WHATSAPP CONTACT
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-accent">
-                    BULK ORDERS
-                  </a>
-                </li>
+            <div className="text-center sm:text-left">
+              <h5 className="font-bold mb-4 sm:mb-6 text-accent text-sm">RESOURCES</h5>
+              <ul className="space-y-3 sm:space-y-4 text-xs sm:text-sm font-medium">
+                <li><a href="#" className="hover:text-accent">SIZE GUIDES</a></li>
+                <li><a href="#" className="hover:text-accent">SHIPPING POLICY</a></li>
+                <li><a href="#contact" className="hover:text-accent">CONTACT US</a></li>
+                <li><a href="#" className="hover:text-accent">BULK ORDERS</a></li>
               </ul>
             </div>
-            <div>
-              <h5 className="font-bold mb-6 text-accent">JOIN THE WAR</h5>
-              <p className="text-sm text-muted-foreground mb-4 font-medium">SUBSCRIBE FOR DROP ALERTS & TECHNIQUES.</p>
-              <div className="flex gap-2">
+            <div className="text-center sm:text-left">
+              <h5 className="font-bold mb-4 sm:mb-6 text-accent text-sm">JOIN THE WAR</h5>
+              <p className="text-xs sm:text-sm text-muted-foreground mb-4 font-medium">SUBSCRIBE FOR DROP ALERTS</p>
+              <div className="flex gap-2 max-w-xs mx-auto sm:mx-0">
                 <input
-                  className="bg-black border border-white/10 px-4 py-2 flex-1 text-sm outline-none focus:border-accent"
+                  className="bg-black border border-white/10 px-3 sm:px-4 py-2 flex-1 text-xs sm:text-sm outline-none focus:border-accent min-w-0"
                   placeholder="EMAIL ADDRESS"
                 />
-                <Button className="bg-accent text-black font-bold rounded-none px-6">GO</Button>
+                <Button className="bg-accent text-black font-bold rounded-none px-4 sm:px-6 text-xs sm:text-sm">GO</Button>
               </div>
             </div>
           </div>
-          <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] tracking-[0.2em] text-muted-foreground font-bold">
+          <div className="pt-6 sm:pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4 text-[9px] sm:text-[10px] tracking-[0.2em] text-muted-foreground font-bold">
             <p>2026 GYM FOG. ALL RIGHTS RESERVED.</p>
-            <div className="flex gap-8">
-              <a href="#">PRIVACY</a>
-              <a href="#">TERMS</a>
-              <a href="#">ALGERIA</a>
+            <div className="flex gap-4 sm:gap-8">
+              <a href="#" className="hover:text-accent">PRIVACY</a>
+              <a href="#" className="hover:text-accent">TERMS</a>
+              <a href="#" className="hover:text-accent">ALGERIA</a>
             </div>
           </div>
         </div>
       </footer>
-
-      <AnimatePresence>
-        {selectedProduct && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/90 backdrop-blur-xl"
-              onClick={() => setSelectedProduct(null)}
-            />
-            <motion.div
-              initial={{ scale: 0.9, y: 50, opacity: 0 }}
-              animate={{ scale: 1, y: 0, opacity: 1 }}
-              exit={{ scale: 0.9, y: 50, opacity: 0 }}
-              className="relative w-full max-w-5xl bg-black border border-white/10 grid md:grid-cols-2 overflow-hidden max-h-[90vh] overflow-y-auto"
-            >
-              <button
-                onClick={() => setSelectedProduct(null)}
-                className="absolute top-6 right-6 z-10 p-2 bg-white/10 hover:bg-accent hover:text-black transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-
-              <div className="aspect-square relative group">
-                <img
-                  src={getProductImageUrl(selectedProduct)}
-                  alt={selectedProduct.title}
-                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              </div>
-
-              <div className="p-8 md:p-12 flex flex-col justify-center">
-                <Badge className="bg-accent text-black rounded-none w-fit mb-4 font-bold tracking-widest">
-                  {selectedProduct.category}
-                </Badge>
-                <h2 className="text-5xl italic leading-none mb-4">{selectedProduct.title}</h2>
-                <p className="text-accent text-3xl font-display italic mb-8">
-                  {selectedProduct.price_dzd} DA
-                </p>
-
-                <div className="space-y-6 mb-10">
-                  <p className="text-muted-foreground text-lg">{selectedProduct.description}</p>
-                  {selectedProduct.sizes && selectedProduct.sizes.length > 0 && (
-                    <div className="flex items-center gap-3 text-sm font-bold">
-                      <Check className="w-4 h-4 text-accent" />
-                      <span>Sizes: {selectedProduct.sizes.join(", ")}</span>
-                    </div>
-                  )}
-                  {selectedProduct.colors && selectedProduct.colors.length > 0 && (
-                    <div className="flex items-center gap-3 text-sm font-bold">
-                      <Check className="w-4 h-4 text-accent" />
-                      <span>Colors: {selectedProduct.colors.join(", ")}</span>
-                    </div>
-                  )}
-                  {selectedProduct.brand && (
-                    <div className="flex items-center gap-3 text-sm font-bold">
-                      <Check className="w-4 h-4 text-accent" />
-                      <span>Brand: {selectedProduct.brand}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-3 text-sm font-bold">
-                    <Check className="w-4 h-4 text-accent" />
-                    <span>Stock: {selectedProduct.stock_quantity > 0 ? `${selectedProduct.stock_quantity} available` : 'Out of stock'}</span>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-4">
-                  {getItemQuantity(selectedProduct.id) > 0 ? (
-                    <div className="flex items-center justify-center gap-4 bg-muted p-4">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="bg-transparent"
-                        onClick={() => updateQuantity(selectedProduct.id, getItemQuantity(selectedProduct.id) - 1)}
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <span className="text-xl font-bold w-12 text-center">{getItemQuantity(selectedProduct.id)}</span>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="bg-transparent"
-                        onClick={() => updateQuantity(selectedProduct.id, getItemQuantity(selectedProduct.id) + 1)}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      size="lg"
-                      className="bg-accent text-black hover:bg-white h-16 text-xl font-display italic w-full"
-                      onClick={() => handleAddToCart(selectedProduct)}
-                      disabled={selectedProduct.stock_quantity <= 0}
-                    >
-                      {selectedProduct.stock_quantity <= 0 ? 'OUT OF STOCK' : 'ADD TO CART'}
-                    </Button>
-                  )}
-                  <p className="text-[10px] text-center text-muted-foreground tracking-widest font-bold">
-                    SHIPPING ACROSS ALGERIA * SECURE PACKAGING
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   )
 }

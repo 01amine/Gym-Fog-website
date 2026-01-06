@@ -168,28 +168,28 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-black">
       {/* Header */}
       <header className="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-md border-b border-white/10">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="container mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 hover:text-accent transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm font-bold">BACK TO SHOP</span>
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="text-xs sm:text-sm font-bold hidden sm:inline">BACK TO SHOP</span>
           </Link>
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 relative overflow-hidden border border-white/20">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 relative overflow-hidden border border-white/20">
               <img src="/gymfog-logo.jpeg" alt="GYM FOG" className="w-full h-full object-cover" />
             </div>
-            <h1 className="text-lg font-display italic">CHECKOUT</h1>
+            <h1 className="text-base sm:text-lg font-display italic">CHECKOUT</h1>
           </div>
-          <div className="w-24" />
+          <div className="w-8 sm:w-24" />
         </div>
       </header>
 
-      <main className="container mx-auto px-4 pt-24 pb-12">
-        <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+      <main className="container mx-auto px-4 pt-20 sm:pt-24 pb-8 sm:pb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 max-w-6xl mx-auto">
           {/* Order Form */}
-          <div>
+          <div className="order-2 lg:order-1">
             <Card className="bg-muted border-white/10">
-              <CardHeader>
-                <CardTitle className="text-2xl font-display italic">DELIVERY DETAILS</CardTitle>
+              <CardHeader className="pb-4 sm:pb-6">
+                <CardTitle className="text-xl sm:text-2xl font-display italic">DELIVERY DETAILS</CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -305,10 +305,10 @@ export default function CheckoutPage() {
           </div>
 
           {/* Order Summary */}
-          <div>
-            <Card className="bg-muted border-white/10 sticky top-24">
-              <CardHeader>
-                <CardTitle className="text-2xl font-display italic">ORDER SUMMARY</CardTitle>
+          <div className="order-1 lg:order-2">
+            <Card className="bg-muted border-white/10 lg:sticky lg:top-24">
+              <CardHeader className="pb-4 sm:pb-6">
+                <CardTitle className="text-xl sm:text-2xl font-display italic">ORDER SUMMARY</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4 max-h-[400px] overflow-auto">

@@ -5,19 +5,9 @@ import {
   updateCategory,
   deleteCategory,
 } from '@/lib/api/category';
-import { Category, CategoryCreate, CategoryUpdate, CreateCategoryVars, EditCategoryVars } from '@/lib/types/category';
+import { Category, CreateCategoryVars, EditCategoryVars } from '@/lib/types/category';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../use-toast';
-
-// Helper function to construct category image URL
-export const getCategoryImageUrl = (imageId: string | null): string | null => {
-  if (!imageId) return null;
-  if (imageId.startsWith('http://') || imageId.startsWith('https://') || imageId.startsWith('/')) {
-    return imageId;
-  }
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-  return `${baseUrl}/categories/images/${imageId}`;
-};
 
 export function useGetCategories() {
   return useQuery<Category[], Error>({
@@ -25,11 +15,6 @@ export function useGetCategories() {
     queryFn: getCategories,
     staleTime: 1000 * 60 * 5,
     retry: false,
-    select: (data) =>
-      data.map((category) => ({
-        ...category,
-        image_url: getCategoryImageUrl(category.image_url),
-      })),
   });
 }
 
@@ -40,10 +25,6 @@ export function useGetCategoryById(id: string) {
     staleTime: 1000 * 60 * 5,
     retry: false,
     enabled: !!id,
-    select: (category) => ({
-      ...category,
-      image_url: getCategoryImageUrl(category.image_url),
-    }),
   });
 }
 
@@ -52,7 +33,7 @@ export function useCreateCategory() {
   const { toast } = useToast();
 
   return useMutation<Category, Error, CreateCategoryVars>({
-    mutationFn: (vars) => createCategory(vars.data, vars.image),
+    mutationFn: (vars) => createCategory(vars.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       toast({
@@ -76,7 +57,7 @@ export function useUpdateCategory() {
   const { toast } = useToast();
 
   return useMutation<Category, Error, EditCategoryVars>({
-    mutationFn: (vars) => updateCategory(vars.id, vars.data, vars.image),
+    mutationFn: (vars) => updateCategory(vars.id, vars.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       toast({

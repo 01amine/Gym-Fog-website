@@ -38,7 +38,7 @@ export default function DeleteProductModal({
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent className="bg-zinc-900 border-zinc-800">
+      <AlertDialogContent className="bg-zinc-900 border-zinc-800 w-[95vw] max-w-md mx-auto">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-white">Delete Product</AlertDialogTitle>
           <AlertDialogDescription className="text-gray-400">

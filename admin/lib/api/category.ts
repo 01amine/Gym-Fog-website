@@ -12,17 +12,10 @@ export const getCategoryById = async (id: string): Promise<Category> => {
   return response.data;
 };
 
-export const createCategory = async (
-  data: CategoryCreate,
-  image?: File
-): Promise<Category> => {
+export const createCategory = async (data: CategoryCreate): Promise<Category> => {
   const formData = new FormData();
   formData.append('title', data.title);
   formData.append('description', data.description);
-
-  if (image) {
-    formData.append('image', image);
-  }
 
   const response = await client.post<Category>(API_ENDPOINTS.CATEGORIES.ROOT, formData, {
     headers: {
@@ -34,8 +27,7 @@ export const createCategory = async (
 
 export const updateCategory = async (
   id: string,
-  data: CategoryUpdate,
-  image?: File
+  data: CategoryUpdate
 ): Promise<Category> => {
   const formData = new FormData();
 
@@ -44,9 +36,6 @@ export const updateCategory = async (
   }
   if (data.description) {
     formData.append('description', data.description);
-  }
-  if (image) {
-    formData.append('image', image);
   }
 
   const response = await client.patch<Category>(API_ENDPOINTS.CATEGORIES.BY_ID(id), formData, {

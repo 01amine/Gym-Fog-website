@@ -53,17 +53,15 @@ export default function CategoriesPage() {
     setSelectedCategory(null);
   };
 
-  const handleSubmit = async (data: { title: string; description: string }, image?: File) => {
+  const handleSubmit = async (data: { title: string; description: string }) => {
     if (selectedCategory) {
       await updateCategory.mutateAsync({
         id: selectedCategory.id,
         data,
-        image,
       });
     } else {
       await createCategory.mutateAsync({
         data,
-        image,
       });
     }
     handleCloseModal();
