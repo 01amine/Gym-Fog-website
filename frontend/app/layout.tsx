@@ -12,23 +12,8 @@ export const metadata: Metadata = {
   title: 'GYM FOG - Combat Sports Gear',
   description: 'Premium combat sports equipment tested by fighters, for fighters. Based in Algeria.',
   icons: {
-    icon: [
-      {
-        url: '/gymfog-logo.jpeg',
-      },
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
+    icon: '/gymfog-logo.jpeg',
+    shortcut: '/gymfog-logo.jpeg',
     apple: '/gymfog-logo.jpeg',
   },
 }

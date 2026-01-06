@@ -17,10 +17,12 @@ export const API_ENDPOINTS = {
   CATEGORIES: {
     ROOT: '/categories/',
     BY_ID: (id: string) => `/categories/${id}`,
+    GET_IMAGE: (imageId: string) => `/categories/images/${imageId}`,
   },
   PRODUCTS: {
     ROOT: '/products/',
     BY_ID: (id: string) => `/products/${id}`,
+    GET_IMAGE: (imageId: string) => `/products/images/${imageId}`,
   },
   ORDERS: {
     ROOT: '/orders',

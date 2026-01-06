@@ -11,6 +11,22 @@ export interface GetProductsParams {
   limit?: number;
 }
 
+// Helper function to construct product image URL
+export const getProductImageUrl = (imageId: string): string => {
+  if (!imageId) return '/placeholder.jpg';
+  if (imageId.startsWith('http://') || imageId.startsWith('https://') || imageId.startsWith('/')) {
+    return imageId;
+  }
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  return `${baseUrl}/products/images/${imageId}`;
+};
+
+// Transform product to have full image URLs
+const transformProduct = (product: Product): Product => ({
+  ...product,
+  image_urls: product.image_urls.map(getProductImageUrl),
+});
+
 export async function getProducts(params?: GetProductsParams): Promise<Product[]> {
   const searchParams = new URLSearchParams();
 
@@ -27,9 +43,11 @@ export async function getProducts(params?: GetProductsParams): Promise<Product[]
   const queryString = searchParams.toString();
   const endpoint = `/products/${queryString ? `?${queryString}` : ''}`;
 
-  return apiClient<Product[]>(endpoint);
+  const products = await apiClient<Product[]>(endpoint);
+  return products.map(transformProduct);
 }
 
 export async function getProductById(productId: string): Promise<Product> {
-  return apiClient<Product>(`/products/${productId}`);
+  const product = await apiClient<Product>(`/products/${productId}`);
+  return transformProduct(product);
 }

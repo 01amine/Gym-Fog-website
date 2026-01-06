@@ -230,10 +230,24 @@ async def delete_product(
     """Delete product (admin only)"""
     if not ObjectId.is_valid(product_id):
         raise HTTPException(status_code=400, detail="Invalid product ID")
-    
+
     product = await Product.get(product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    
+
     await product.delete()
     return {"message": "Product deleted successfully", "id": product_id}
+
+
+@router.get("/images/{image_id}")
+async def get_product_image(image_id: str):
+    """Get product image by ID (public endpoint)"""
+    try:
+        data, filename, content_type = await image_bucket.get(image_id)
+        return StreamingResponse(
+            iter([data]),
+            media_type=content_type,
+            headers={"Content-Disposition": f"inline; filename={filename}"}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=404, detail="Image not found")

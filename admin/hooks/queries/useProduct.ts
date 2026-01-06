@@ -19,12 +19,27 @@ interface GetProductsParams {
   limit?: number;
 }
 
+// Helper function to construct product image URL
+export const getProductImageUrl = (imageId: string): string => {
+  if (!imageId) return '/placeholder.jpg';
+  if (imageId.startsWith('http://') || imageId.startsWith('https://') || imageId.startsWith('/')) {
+    return imageId;
+  }
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  return `${baseUrl}/products/images/${imageId}`;
+};
+
 export function useGetProducts(params?: GetProductsParams) {
   return useQuery<Product[], Error>({
     queryKey: ['products', params],
     queryFn: () => getProducts(params),
     staleTime: 1000 * 60 * 5,
     retry: false,
+    select: (data) =>
+      data.map((product) => ({
+        ...product,
+        image_urls: product.image_urls.map(getProductImageUrl),
+      })),
   });
 }
 
@@ -35,6 +50,10 @@ export function useGetProductById(id: string) {
     staleTime: 1000 * 60 * 5,
     retry: false,
     enabled: !!id,
+    select: (product) => ({
+      ...product,
+      image_urls: product.image_urls.map(getProductImageUrl),
+    }),
   });
 }
 

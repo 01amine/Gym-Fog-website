@@ -1,5 +1,6 @@
 from app.models.category import Category, CategoryCreate, CategoryUpdate
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form
+from fastapi.responses import StreamingResponse
 from typing import List, Optional
 from app.models.user import User, Role
 from app.deps.auth import role_required
@@ -121,10 +122,24 @@ async def delete_category(
     """Delete category (admin only)"""
     if not ObjectId.is_valid(category_id):
         raise HTTPException(status_code=400, detail="Invalid category ID")
-    
+
     category = await Category.get(category_id)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
-    
+
     await category.delete()
     return {"message": "Category deleted successfully", "id": category_id}
+
+
+@router.get("/images/{image_id}")
+async def get_category_image(image_id: str):
+    """Get category image by ID (public endpoint)"""
+    try:
+        data, filename, content_type = await image_bucket.get(image_id)
+        return StreamingResponse(
+            iter([data]),
+            media_type=content_type,
+            headers={"Content-Disposition": f"inline; filename={filename}"}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=404, detail="Image not found")

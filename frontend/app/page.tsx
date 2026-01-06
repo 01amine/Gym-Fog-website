@@ -127,13 +127,6 @@ export default function Page() {
           </div>
 
           <div className="flex items-center justify-end gap-4">
-            <Button
-              onClick={() => openWhatsApp()}
-              className="hidden md:flex bg-accent text-black hover:bg-white font-bold px-4 py-1 h-9 text-xs flex items-center gap-2"
-            >
-              <MessageCircle className="w-3 h-3" /> WHATSAPP
-            </Button>
-
             {/* Cart Button */}
             <Sheet open={cartOpen} onOpenChange={setCartOpen}>
               <SheetTrigger asChild>
