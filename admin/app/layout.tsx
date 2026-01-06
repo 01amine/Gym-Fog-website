@@ -7,8 +7,11 @@ import { Toaster } from "@/components/ui/toaster"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Lectio - Administration",
-  description: "Plateforme d'administration Lectio",
+  title: "GymFog - Admin Panel",
+  description: "GymFog Admin Dashboard",
+  icons: {
+    icon: "/gymfog-logo.jpeg",
+  },
 }
 
 export default function RootLayout({
@@ -17,16 +20,15 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="fr">
-      <body className={inter.className}>
+    <html lang="en" className="dark">
+      <body className={`${inter.className} bg-zinc-950`}>
         <Provider>
           <main>
-          {children}
+            {children}
           </main>
-                  <Toaster />
-
-          </Provider>
-        </body>
+          <Toaster />
+        </Provider>
+      </body>
     </html>
   )
 }

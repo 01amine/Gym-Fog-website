@@ -111,7 +111,7 @@ async def create_product(
     # Upload images
     for image in images:
         try:
-            image_url = await image_bucket.upload_file(image)
+            image_url = await image_bucket.put(image)
             image_urls.append(image_url)
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to upload image: {str(e)}")
@@ -178,7 +178,7 @@ async def update_product(
         new_image_urls = []
         for image in images:
             try:
-                image_url = await image_bucket.upload_file(image)
+                image_url = await image_bucket.put(image)
                 new_image_urls.append(image_url)
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"Failed to upload image: {str(e)}")

@@ -22,7 +22,7 @@ async def create_category(
     image_url = None
     if image:
         try:
-            image_url = await image_bucket.upload_file(image)
+            image_url = await image_bucket.put(image)
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to upload image: {str(e)}")
     
@@ -98,7 +98,7 @@ async def update_category(
         category.description = description
     if image:
         try:
-            image_url = await image_bucket.upload_file(image)
+            image_url = await image_bucket.put(image)
             category.image_url = image_url
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to upload image: {str(e)}")
