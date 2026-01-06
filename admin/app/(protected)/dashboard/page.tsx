@@ -19,7 +19,7 @@ export default function DashboardPage() {
     return (
       <AdminLayout>
         <div className="space-y-6">
-          <h2 className="text-2xl font-bold text-gray-900">Tableau de bord</h2>
+          <h2 className="text-2xl font-bold text-white">Dashboard</h2>
           <StatsCardsLoading />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ChartLoading />
@@ -37,12 +37,12 @@ export default function DashboardPage() {
     return (
       <AdminLayout>
         <div className="space-y-6">
-          <h2 className="text-2xl font-bold text-gray-900">Tableau de bord</h2>
-          <DataError 
-            error={isError ? "Erreur lors du chargement des commandes" : isErrorAnalytics ? "Erreur lors du chargement des analyses" : "Données manquantes"}
+          <h2 className="text-2xl font-bold text-white">Dashboard</h2>
+          <DataError
+            error={isError ? "Error loading orders" : isErrorAnalytics ? "Error loading analytics" : "Missing data"}
             onRetry={() => window.location.reload()}
-            title="Erreur de chargement du tableau de bord"
-            message="Impossible de charger les données du tableau de bord. Veuillez réessayer."
+            title="Dashboard Loading Error"
+            message="Unable to load dashboard data. Please try again."
           />
         </div>
       </AdminLayout>
@@ -56,7 +56,7 @@ export default function DashboardPage() {
     todayAppointments: Analytics.total_today_appointments,
   }
 
-  // ✅ Order status chart (convert backend format → chart format)
+  // Order status chart (convert backend format → chart format)
   const orderStatusData = Analytics.order_status_percentages.map(status => ({
     name: status.status,
     value: status.percentage,
@@ -67,7 +67,7 @@ export default function DashboardPage() {
     value: mat.percentage,
   }))
 
-  // ✅ Monthly orders chart
+  // Monthly orders chart
   const monthlyOrdersData = Analytics.monthly_orders.map(order => ({
     name: order.month,
     value: order.count,
@@ -79,56 +79,56 @@ export default function DashboardPage() {
   }))
 
   const orderStatusPieData = [
-    { name: "En attente", value: Orders.filter(o => o.status === "pending").length },
-    { name: "Impression", value: Orders.filter(o => o.status === "printing").length },
-    { name: "Prêt", value: Orders.filter(o => o.status === "ready").length },
-    { name: "Livré", value: Orders.filter(o => o.status === "delivered").length },
+    { name: "Pending", value: Orders.filter(o => o.status === "pending").length },
+    { name: "Printing", value: Orders.filter(o => o.status === "printing").length },
+    { name: "Ready", value: Orders.filter(o => o.status === "ready").length },
+    { name: "Delivered", value: Orders.filter(o => o.status === "delivered").length },
   ]
 
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-gray-900">Tableau de bord</h2>
+        <h2 className="text-2xl font-bold text-white">Dashboard</h2>
 
         {/* Stats Cards */}
         <StatsCards stats={stats} />
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
+          <Card className="bg-zinc-900 border-zinc-800">
             <CardHeader>
-              <CardTitle>Statut des commandes</CardTitle>
-              <CardDescription>Répartition des commandes par statut</CardDescription>
+              <CardTitle className="text-white">Order Status</CardTitle>
+              <CardDescription className="text-gray-400">Distribution of orders by status</CardDescription>
             </CardHeader>
             <CardContent>
               <PieChartComponent data={orderStatusData} className="h-64" />
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-zinc-900 border-zinc-800">
             <CardHeader>
-              <CardTitle>Types de supports</CardTitle>
-              <CardDescription>Répartition des supports par type</CardDescription>
+              <CardTitle className="text-white">Product Types</CardTitle>
+              <CardDescription className="text-gray-400">Distribution of products by type</CardDescription>
             </CardHeader>
             <CardContent>
               <PieChartComponent data={materialTypeData} className="h-64" />
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-zinc-900 border-zinc-800">
             <CardHeader>
-              <CardTitle>Évolution des commandes</CardTitle>
-              <CardDescription>Nombre de commandes par mois</CardDescription>
+              <CardTitle className="text-white">Order Trends</CardTitle>
+              <CardDescription className="text-gray-400">Number of orders per month</CardDescription>
             </CardHeader>
             <CardContent>
               <LineChartComponent data={monthlyOrdersData} className="h-64" />
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-zinc-900 border-zinc-800">
             <CardHeader>
-              <CardTitle>Chiffre d'affaires</CardTitle>
-              <CardDescription>Revenus mensuels en DZD</CardDescription>
+              <CardTitle className="text-white">Revenue</CardTitle>
+              <CardDescription className="text-gray-400">Monthly revenue in DZD</CardDescription>
             </CardHeader>
             <CardContent>
               <BarChartComponent data={revenueData} className="h-64" />
