@@ -4,11 +4,12 @@ import { useState, useEffect, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ShoppingCart, Play, Instagram, Facebook, MessageCircle, X, Menu, Plus, Minus, Loader2 } from "lucide-react"
+import { ShoppingCart, Play, Instagram, Facebook, MessageCircle, X, Menu, Plus, Minus, Loader2, Heart, User } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
 import { useCart } from "@/lib/context/cart-context"
+import { useFavorites } from "@/lib/context/favorites-context"
 import { getProducts } from "@/lib/api/products"
 import { getCategories } from "@/lib/api/categories"
 import { Product, Category } from "@/lib/types"
@@ -26,6 +27,7 @@ export default function Page() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   const { items, totalItems, totalPrice, addItem, removeItem, updateQuantity } = useCart()
+  const { favorites, toggleFavorite, isFavorite } = useFavorites()
 
   // Fetch products and categories from API
   useEffect(() => {
@@ -48,15 +50,20 @@ export default function Page() {
     fetchData()
   }, [])
 
-  const categoryNames = useMemo(() => {
-    const names = ["ALL", ...categories.map(c => c.title.toUpperCase())]
-    return names
+  const categoryOptions = useMemo(() => {
+    return [{ id: "ALL", title: "ALL" }, ...categories.map(c => ({ id: c.id, title: c.title.toUpperCase() }))]
   }, [categories])
 
   const filteredProducts = useMemo(() => {
     if (selectedCategory === "ALL") return products
-    return products.filter((p) => p.category.toUpperCase() === selectedCategory)
+    // Find the category by its ID and filter products
+    return products.filter((p) => p.category === selectedCategory)
   }, [selectedCategory, products])
+
+  const getCategoryTitle = (categoryId: string) => {
+    const cat = categories.find(c => c.id === categoryId)
+    return cat?.title || categoryId
+  }
 
   const openWhatsApp = (message?: string) => {
     const text = message || "Hello GYM FOG! I'd like to inquire about your gear."
@@ -125,14 +132,33 @@ export default function Page() {
           </Link>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-2 sm:gap-4 flex-1 justify-end">
+          <div className="flex items-center gap-1 sm:gap-2 flex-1 justify-end">
+            {/* Account Button */}
+            <Link href="/auth">
+              <Button variant="ghost" size="icon" className="hover:text-accent h-9 w-9 sm:h-10 sm:w-10">
+                <User className="w-5 h-5 sm:w-6 sm:h-6" />
+              </Button>
+            </Link>
+
+            {/* Favorites Button */}
+            <Link href="/favorites">
+              <Button variant="ghost" size="icon" className="hover:text-accent relative h-9 w-9 sm:h-10 sm:w-10">
+                <Heart className="w-5 h-5 sm:w-6 sm:h-6" />
+                {favorites.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center font-bold">
+                    {favorites.length}
+                  </span>
+                )}
+              </Button>
+            </Link>
+
             {/* Cart Button */}
             <Sheet open={cartOpen} onOpenChange={setCartOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="hover:text-accent relative h-10 w-10">
+                <Button variant="ghost" size="icon" className="hover:text-accent relative h-9 w-9 sm:h-10 sm:w-10">
                   <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6" />
                   {totalItems > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-accent text-black text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
+                    <span className="absolute -top-1 -right-1 bg-accent text-black text-[10px] w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center font-bold">
                       {totalItems}
                     </span>
                   )}
@@ -233,18 +259,18 @@ export default function Page() {
                   <div className="pt-6 border-t border-white/10">
                     <p className="text-[10px] tracking-[0.2em] font-bold text-muted-foreground mb-4 not-italic">CATEGORIES</p>
                     <div className="flex flex-col gap-3">
-                      {categoryNames.map((cat) => (
+                      {categoryOptions.map((cat) => (
                         <button
-                          key={cat}
+                          key={cat.id}
                           onClick={() => {
-                            setSelectedCategory(cat)
+                            setSelectedCategory(cat.id)
                             setMenuOpen(false)
                           }}
                           className={`text-left text-lg hover:text-accent transition-colors ${
-                            selectedCategory === cat ? 'text-accent' : ''
+                            selectedCategory === cat.id ? 'text-accent' : ''
                           }`}
                         >
-                          {cat}
+                          {cat.title}
                         </button>
                       ))}
                     </div>
@@ -331,15 +357,15 @@ export default function Page() {
             </div>
             {/* Category Filter - Horizontal Scroll on Mobile */}
             <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap">
-              {categoryNames.map((cat) => (
+              {categoryOptions.map((cat) => (
                 <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
                   className={`flex-shrink-0 px-3 sm:px-4 py-2 text-xs font-bold border transition-all ${
-                    selectedCategory === cat ? "bg-accent text-black border-accent" : "bg-transparent border-white/10 hover:border-white/30"
+                    selectedCategory === cat.id ? "bg-accent text-black border-accent" : "bg-transparent border-white/10 hover:border-white/30"
                   }`}
                 >
-                  {cat}
+                  {cat.title}
                 </button>
               ))}
             </div>
@@ -369,7 +395,7 @@ export default function Page() {
                       />
                       <div className="absolute top-2 left-2 sm:top-4 sm:left-4">
                         <Badge className="bg-primary text-white rounded-none italic font-display text-[10px] sm:text-xs px-2 py-1">
-                          {product.category}
+                          {getCategoryTitle(product.category)}
                         </Badge>
                       </div>
                       {product.stock_quantity <= 0 && (

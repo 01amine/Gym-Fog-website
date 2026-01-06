@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { CartProvider } from '@/lib/context/cart-context'
+import { FavoritesProvider } from '@/lib/context/favorites-context'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
@@ -27,8 +28,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={`font-sans antialiased`}>
         <CartProvider>
-          {children}
-          <Toaster />
+          <FavoritesProvider>
+            {children}
+            <Toaster />
+          </FavoritesProvider>
         </CartProvider>
         <Analytics />
       </body>
