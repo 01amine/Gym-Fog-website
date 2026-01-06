@@ -1,0 +1,39 @@
+import { API_ENDPOINTS } from "../const/endpoint";
+import { AdmindOrder, Orders } from "../types/order";
+import client from "./clients";
+
+export async function get_order_per_student(
+    studentId: string,
+): Promise<Orders> {
+    const { data } = await client.get<Orders>(API_ENDPOINTS.ORDERS.BY_ID(studentId));
+    return data;
+}
+
+export async function get_order_by_admin(): Promise<AdmindOrder[]> {
+    const { data } = await client.get<AdmindOrder[]>(API_ENDPOINTS.ORDERS.GET_ADMIN_ORDERS);
+    return data;
+}
+
+export async function make_order_accepted(id: string): Promise<void> {
+    await client.patch(API_ENDPOINTS.ORDERS.ACCEPT_ORDER(id));
+}
+
+export async function make_order_declined(id: string): Promise<void> {
+    await client.patch(API_ENDPOINTS.ORDERS.DECLINE_ORDER(id));
+}
+
+export async function delete_order(id: string): Promise<void> {
+    await client.delete(API_ENDPOINTS.ORDERS.DELETE_ORDER(id));
+}
+
+export async function make_order_ready(id: string): Promise<void> {
+    await client.patch(API_ENDPOINTS.ORDERS.MARK_ORDER_READY(id));
+}
+
+export async function make_order_printed(id: string): Promise<void> {
+    await client.patch(API_ENDPOINTS.ORDERS.PRINT_ORDER(id));
+}
+
+export async function make_order_delivered(id: string): Promise<void> {
+    await client.patch(API_ENDPOINTS.ORDERS.DELIVER_ORDER(id));
+}
