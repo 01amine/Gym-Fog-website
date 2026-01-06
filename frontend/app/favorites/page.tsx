@@ -2,16 +2,18 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Heart, ShoppingCart, Trash2, HeartOff } from "lucide-react"
 import Link from "next/link"
 import { useFavorites } from "@/lib/context/favorites-context"
 import { useCart } from "@/lib/context/cart-context"
+import { useLanguage } from "@/lib/context/language-context"
+import { LanguageSelector } from "@/components/language-selector"
 import { toast } from "sonner"
 
 export default function FavoritesPage() {
   const { favorites, removeFavorite, clearFavorites } = useFavorites()
   const { addItem } = useCart()
+  const { t, isRTL } = useLanguage()
 
   const getProductImageUrl = (imageUrls: string[]) => {
     if (imageUrls && imageUrls.length > 0) {
@@ -22,28 +24,30 @@ export default function FavoritesPage() {
 
   const handleAddToCart = (product: typeof favorites[0]) => {
     addItem(product)
-    toast.success(`${product.title} added to cart`)
+    toast.success(t.savedToFavorites)
   }
 
   const handleRemove = (product: typeof favorites[0]) => {
     removeFavorite(product.id)
-    toast.success(`${product.title} removed from favorites`)
+    toast.success(t.removedFromFavorites)
   }
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-black" dir={isRTL ? "rtl" : "ltr"}>
       {/* Header */}
       <header className="fixed top-0 w-full z-50 bg-black/90 backdrop-blur-md border-b border-white/10">
         <div className="container mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 hover:text-accent transition-colors">
-            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="text-xs sm:text-sm font-bold hidden sm:inline">BACK TO SHOP</span>
+          <Link href="/" className={`flex items-center gap-2 hover:text-accent transition-colors ${isRTL ? "flex-row-reverse" : ""}`}>
+            <ArrowLeft className={`w-4 h-4 sm:w-5 sm:h-5 ${isRTL ? "rotate-180" : ""}`} />
+            <span className="text-xs sm:text-sm font-bold hidden sm:inline">{t.backToShop}</span>
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
             <Heart className="w-5 h-5 text-accent fill-accent" />
-            <h1 className="text-base sm:text-lg font-display italic">MY FAVORITES</h1>
+            <h1 className="text-base sm:text-lg font-display italic">{t.favorites}</h1>
           </div>
-          <div className="w-20 sm:w-24" />
+          <div className="flex items-center gap-2">
+            <LanguageSelector />
+          </div>
         </div>
       </header>
 
@@ -53,36 +57,36 @@ export default function FavoritesPage() {
             <div className="p-6 bg-muted rounded-full mb-6">
               <HeartOff className="w-16 h-16 text-muted-foreground" />
             </div>
-            <h2 className="text-2xl sm:text-3xl font-display italic mb-4">NO FAVORITES YET</h2>
+            <h2 className="text-2xl sm:text-3xl font-display italic mb-4">{t.noFavorites}</h2>
             <p className="text-muted-foreground mb-8 max-w-md">
-              Start adding products to your favorites by clicking the heart icon on any product you like.
+              {t.addToFavorites}
             </p>
             <Link href="/">
               <Button className="bg-accent text-black hover:bg-white font-display italic">
-                BROWSE PRODUCTS
+                {t.browseProducts}
               </Button>
             </Link>
           </div>
         ) : (
           <>
             {/* Header with count and clear button */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-display italic">YOUR FAVORITES</h2>
+            <div className={`flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 ${isRTL ? "sm:flex-row-reverse" : ""}`}>
+              <div className={isRTL ? "text-right" : ""}>
+                <h2 className="text-2xl sm:text-3xl font-display italic">{t.favorites}</h2>
                 <p className="text-muted-foreground text-sm">
-                  {favorites.length} {favorites.length === 1 ? "item" : "items"} saved
+                  {favorites.length} {t.itemsSaved}
                 </p>
               </div>
               <Button
                 variant="outline"
                 onClick={() => {
                   clearFavorites()
-                  toast.success("All favorites cleared")
+                  toast.success(t.removedFromFavorites)
                 }}
                 className="border-red-500/50 text-red-400 hover:bg-red-500/10 hover:text-red-300"
               >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Clear All
+                <Trash2 className={`w-4 h-4 ${isRTL ? "ml-2" : "mr-2"}`} />
+                {t.clearAll}
               </Button>
             </div>
 
@@ -99,7 +103,7 @@ export default function FavoritesPage() {
                       />
                       {product.stock_quantity <= 0 && (
                         <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
-                          <span className="text-red-500 font-bold text-xs sm:text-lg">OUT OF STOCK</span>
+                          <span className="text-red-500 font-bold text-xs sm:text-lg">{t.outOfStock}</span>
                         </div>
                       )}
                       {/* Remove from favorites button */}
@@ -109,14 +113,14 @@ export default function FavoritesPage() {
                           e.stopPropagation()
                           handleRemove(product)
                         }}
-                        className="absolute top-2 right-2 sm:top-3 sm:right-3 p-2 bg-black/70 hover:bg-red-500 text-white rounded-full transition-colors"
+                        className={`absolute top-2 ${isRTL ? "left-2 sm:left-3" : "right-2 sm:right-3"} p-2 bg-black/70 hover:bg-red-500 text-white rounded-full transition-colors`}
                       >
                         <Heart className="w-4 h-4 fill-current" />
                       </button>
                     </CardContent>
                   </Link>
                   <CardFooter className="flex flex-col items-stretch p-3 sm:p-4 bg-muted/50 backdrop-blur-sm gap-2 sm:gap-3">
-                    <div>
+                    <div className={isRTL ? "text-right" : ""}>
                       <h4 className="font-display italic text-sm sm:text-lg truncate">{product.title}</h4>
                       <p className="text-accent font-bold text-xs sm:text-base">{product.price_dzd.toLocaleString()} DA</p>
                     </div>
@@ -126,8 +130,8 @@ export default function FavoritesPage() {
                         onClick={() => handleAddToCart(product)}
                         disabled={product.stock_quantity <= 0}
                       >
-                        <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                        ADD TO CART
+                        <ShoppingCart className={`w-3 h-3 sm:w-4 sm:h-4 ${isRTL ? "ml-1 sm:ml-2" : "mr-1 sm:mr-2"}`} />
+                        {t.addToCart}
                       </Button>
                     </div>
                   </CardFooter>

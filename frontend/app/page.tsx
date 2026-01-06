@@ -4,16 +4,19 @@ import { useState, useEffect, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ShoppingCart, Play, Instagram, Facebook, MessageCircle, X, Menu, Plus, Minus, Loader2, Heart, User } from "lucide-react"
+import { ShoppingCart, Play, Instagram, Facebook, MessageCircle, X, Menu, Plus, Minus, Loader2, Heart, User, Zap } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
 import { useCart } from "@/lib/context/cart-context"
 import { useFavorites } from "@/lib/context/favorites-context"
+import { useLanguage } from "@/lib/context/language-context"
+import { LanguageSelector } from "@/components/language-selector"
 import { getProducts } from "@/lib/api/products"
 import { getCategories } from "@/lib/api/categories"
 import { Product, Category } from "@/lib/types"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 export default function Page() {
@@ -26,8 +29,17 @@ export default function Page() {
   const [cartOpen, setCartOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
+  const router = useRouter()
   const { items, totalItems, totalPrice, addItem, removeItem, updateQuantity } = useCart()
   const { favorites, toggleFavorite, isFavorite } = useFavorites()
+  const { t, isRTL } = useLanguage()
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  // Check if user is logged in
+  useEffect(() => {
+    const user = localStorage.getItem("gymfog_user")
+    setIsLoggedIn(!!user)
+  }, [])
 
   // Fetch products and categories from API
   useEffect(() => {
@@ -74,7 +86,25 @@ export default function Page() {
     e.preventDefault()
     e.stopPropagation()
     addItem(product)
-    toast.success(`${product.title} added to cart`)
+    toast.success(`${product.title} ${t.addToCart.toLowerCase()}`)
+  }
+
+  const handleBuyNow = (product: Product, e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    addItem(product)
+    router.push("/checkout")
+  }
+
+  const handleToggleFavorite = (product: Product, e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    toggleFavorite(product.id)
+    if (isFavorite(product.id)) {
+      toast.success(t.removedFromFavorites)
+    } else {
+      toast.success(t.savedToFavorites)
+    }
   }
 
   const getProductImageUrl = (product: Product) => {
@@ -115,10 +145,10 @@ export default function Page() {
       >
         <div className="container mx-auto px-4 h-16 sm:h-20 flex items-center justify-between">
           {/* Desktop Nav - Left */}
-          <div className="hidden md:flex items-center gap-6 text-[10px] font-bold tracking-widest flex-1">
-            <a href="#shop" className="hover:text-accent transition-colors">SHOP</a>
-            <a href="#story" className="hover:text-accent transition-colors">OUR STORY</a>
-            <a href="#contact" className="hover:text-accent transition-colors">CONTACT</a>
+          <div className={`hidden md:flex items-center gap-6 text-[10px] font-bold tracking-widest flex-1 ${isRTL ? "flex-row-reverse" : ""}`}>
+            <a href="#shop" className="hover:text-accent transition-colors">{t.shop}</a>
+            <a href="#story" className="hover:text-accent transition-colors">{t.ourStory}</a>
+            <a href="#contact" className="hover:text-accent transition-colors">{t.contact}</a>
           </div>
 
           {/* Logo - Center */}
@@ -132,10 +162,13 @@ export default function Page() {
           </Link>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-1 sm:gap-2 flex-1 justify-end">
+          <div className={`flex items-center gap-1 sm:gap-2 flex-1 justify-end ${isRTL ? "flex-row-reverse" : ""}`}>
+            {/* Language Selector */}
+            <LanguageSelector />
+
             {/* Account Button */}
-            <Link href="/auth">
-              <Button variant="ghost" size="icon" className="hover:text-accent h-9 w-9 sm:h-10 sm:w-10">
+            <Link href={isLoggedIn ? "/profile" : "/auth"}>
+              <Button variant="ghost" size="icon" className={`hover:text-accent h-9 w-9 sm:h-10 sm:w-10 ${isLoggedIn ? "text-accent" : ""}`}>
                 <User className="w-5 h-5 sm:w-6 sm:h-6" />
               </Button>
             </Link>
@@ -165,13 +198,13 @@ export default function Page() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="bg-black border-l border-white/10 w-full sm:w-[400px] p-4 sm:p-6">
-                <SheetHeader className="text-left mb-4 sm:mb-6">
-                  <SheetTitle className="text-xl sm:text-2xl italic font-display">YOUR CART</SheetTitle>
+                <SheetHeader className={`mb-4 sm:mb-6 ${isRTL ? "text-right" : "text-left"}`}>
+                  <SheetTitle className="text-xl sm:text-2xl italic font-display">{t.yourCart}</SheetTitle>
                 </SheetHeader>
                 {items.length === 0 ? (
                   <div className="text-center text-muted-foreground py-12">
                     <ShoppingCart className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>Your cart is empty</p>
+                    <p>{t.cartEmpty}</p>
                   </div>
                 ) : (
                   <div className="flex flex-col h-[calc(100%-80px)]">
@@ -220,13 +253,13 @@ export default function Page() {
                       ))}
                     </div>
                     <div className="border-t border-white/10 pt-4 mt-4">
-                      <div className="flex justify-between text-lg font-bold mb-4">
-                        <span>Total:</span>
+                      <div className={`flex justify-between text-lg font-bold mb-4 ${isRTL ? "flex-row-reverse" : ""}`}>
+                        <span>{t.total}:</span>
                         <span className="text-accent">{totalPrice.toLocaleString()} DA</span>
                       </div>
                       <Link href="/checkout" onClick={() => setCartOpen(false)}>
                         <Button className="w-full bg-accent text-black hover:bg-white h-12 font-display italic text-lg">
-                          CHECKOUT
+                          {t.checkout}
                         </Button>
                       </Link>
                     </div>
@@ -243,21 +276,21 @@ export default function Page() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="bg-black border-l border-white/10 w-full sm:w-[300px]">
-                <SheetHeader className="text-left mb-8">
-                  <SheetTitle className="text-3xl sm:text-4xl italic font-display">MENU</SheetTitle>
+                <SheetHeader className={`mb-8 ${isRTL ? "text-right" : "text-left"}`}>
+                  <SheetTitle className="text-3xl sm:text-4xl italic font-display">{t.menu}</SheetTitle>
                 </SheetHeader>
                 <nav className="flex flex-col gap-6 text-xl sm:text-2xl font-display italic">
-                  <a href="#shop" onClick={() => setMenuOpen(false)} className="hover:text-accent transition-all hover:translate-x-2">
-                    SHOP
+                  <a href="#shop" onClick={() => setMenuOpen(false)} className={`hover:text-accent transition-all ${isRTL ? "hover:-translate-x-2" : "hover:translate-x-2"}`}>
+                    {t.shop}
                   </a>
-                  <a href="#story" onClick={() => setMenuOpen(false)} className="hover:text-accent transition-all hover:translate-x-2">
-                    OUR STORY
+                  <a href="#story" onClick={() => setMenuOpen(false)} className={`hover:text-accent transition-all ${isRTL ? "hover:-translate-x-2" : "hover:translate-x-2"}`}>
+                    {t.ourStory}
                   </a>
-                  <a href="#contact" onClick={() => setMenuOpen(false)} className="hover:text-accent transition-all hover:translate-x-2">
-                    CONTACT US
+                  <a href="#contact" onClick={() => setMenuOpen(false)} className={`hover:text-accent transition-all ${isRTL ? "hover:-translate-x-2" : "hover:translate-x-2"}`}>
+                    {t.contactUs}
                   </a>
                   <div className="pt-6 border-t border-white/10">
-                    <p className="text-[10px] tracking-[0.2em] font-bold text-muted-foreground mb-4 not-italic">CATEGORIES</p>
+                    <p className={`text-[10px] tracking-[0.2em] font-bold text-muted-foreground mb-4 not-italic ${isRTL ? "text-right" : ""}`}>{t.categories}</p>
                     <div className="flex flex-col gap-3">
                       {categoryOptions.map((cat) => (
                         <button
@@ -303,29 +336,29 @@ export default function Page() {
             transition={{ delay: 0.8, duration: 1, ease: "backOut" }}
             className="text-[10vw] sm:text-[8vw] lg:text-[7vw] leading-[0.85] font-display italic mb-6"
           >
-            TESTED BY FIGHTERS
+            {t.testedByFighters}
             <br />
-            <span className="text-accent">FOR FIGHTERS</span>
+            <span className="text-accent">{t.forFighters}</span>
           </motion.h2>
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 1.2, duration: 0.5 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-6 sm:mt-8"
+            className={`flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-6 sm:mt-8 ${isRTL ? "sm:flex-row-reverse" : ""}`}
           >
             <Button
               size="lg"
               className="w-full sm:w-auto bg-primary text-white hover:bg-accent hover:text-black text-base sm:text-xl px-8 sm:px-12 h-12 sm:h-16 font-display italic"
               onClick={() => document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' })}
             >
-              SHOP COMBAT GEAR
+              {t.shopCombatGear}
             </Button>
             <Button
               size="lg"
               variant="outline"
               className="w-full sm:w-auto border-2 border-white text-white hover:bg-white hover:text-black text-base sm:text-xl px-8 sm:px-12 h-12 sm:h-16 font-display italic bg-transparent"
             >
-              <Play className="mr-2 h-4 w-4 sm:h-5 sm:w-5 fill-current" /> BRAND STORY
+              <Play className={`h-4 w-4 sm:h-5 sm:w-5 fill-current ${isRTL ? "ml-2" : "mr-2"}`} /> {t.brandStory}
             </Button>
           </motion.div>
         </div>
@@ -351,9 +384,9 @@ export default function Page() {
             viewport={{ once: true }}
             className="flex flex-col gap-4 sm:gap-8"
           >
-            <div>
-              <p className="text-accent font-bold mb-1 sm:mb-2 tracking-[0.2em] text-xs sm:text-sm">EQUIPMENT</p>
-              <h3 className="text-3xl sm:text-5xl lg:text-6xl italic">GEAR UP FOR WAR</h3>
+            <div className={isRTL ? "text-right" : ""}>
+              <p className="text-accent font-bold mb-1 sm:mb-2 tracking-[0.2em] text-xs sm:text-sm">{t.equipment}</p>
+              <h3 className="text-3xl sm:text-5xl lg:text-6xl italic">{t.gearUpForWar}</h3>
             </div>
             {/* Category Filter - Horizontal Scroll on Mobile */}
             <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap">
@@ -378,8 +411,8 @@ export default function Page() {
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="text-center py-24 text-muted-foreground">
-            <p className="text-xl">No products found</p>
-            <p className="text-sm mt-2">Check back soon for new gear!</p>
+            <p className="text-xl">{t.noProductsFound}</p>
+            <p className="text-sm mt-2">{t.checkBackSoon}</p>
           </div>
         ) : (
           <div className="container mx-auto px-4">
@@ -393,31 +426,57 @@ export default function Page() {
                         alt={product.title}
                         className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500"
                       />
-                      <div className="absolute top-2 left-2 sm:top-4 sm:left-4">
+                      <div className={`absolute top-2 ${isRTL ? "right-2 sm:right-4" : "left-2 sm:left-4"}`}>
                         <Badge className="bg-primary text-white rounded-none italic font-display text-[10px] sm:text-xs px-2 py-1">
                           {getCategoryTitle(product.category)}
                         </Badge>
                       </div>
+                      {/* Favorite Button */}
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className={`absolute top-2 ${isRTL ? "left-2 sm:left-4" : "right-2 sm:right-4"} h-8 w-8 sm:h-10 sm:w-10 bg-black/50 hover:bg-black/70 ${
+                          isFavorite(product.id) ? "text-red-500" : "text-white"
+                        }`}
+                        onClick={(e) => handleToggleFavorite(product, e)}
+                      >
+                        <Heart className={`h-4 w-4 sm:h-5 sm:w-5 ${isFavorite(product.id) ? "fill-current" : ""}`} />
+                      </Button>
                       {product.stock_quantity <= 0 && (
                         <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
-                          <span className="text-red-500 font-bold text-xs sm:text-lg">OUT OF STOCK</span>
+                          <span className="text-red-500 font-bold text-xs sm:text-lg">{t.outOfStock}</span>
                         </div>
                       )}
                     </CardContent>
-                    <CardFooter className="flex items-center justify-between p-3 sm:p-6 bg-muted/50 backdrop-blur-sm">
-                      <div className="min-w-0 flex-1">
-                        <h4 className="font-display italic text-sm sm:text-xl truncate">{product.title}</h4>
+                    <CardFooter className="flex flex-col p-3 sm:p-4 bg-muted/50 backdrop-blur-sm gap-2 sm:gap-3">
+                      <div className={`w-full ${isRTL ? "text-right" : "text-left"}`}>
+                        <h4 className="font-display italic text-sm sm:text-lg truncate">{product.title}</h4>
                         <p className="text-accent font-bold text-xs sm:text-base">{product.price_dzd.toLocaleString()} DA</p>
                       </div>
-                      <Button
-                        size="icon"
-                        variant="outline"
-                        className="border-white/20 hover:bg-accent hover:text-black bg-transparent h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0 ml-2"
-                        onClick={(e) => handleAddToCart(product, e)}
-                        disabled={product.stock_quantity <= 0}
-                      >
-                        <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4" />
-                      </Button>
+                      {/* Action Buttons */}
+                      <div className={`flex gap-2 w-full ${isRTL ? "flex-row-reverse" : ""}`}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 border-white/20 hover:bg-white hover:text-black bg-transparent text-[10px] sm:text-xs h-8 sm:h-9"
+                          onClick={(e) => handleAddToCart(product, e)}
+                          disabled={product.stock_quantity <= 0}
+                        >
+                          <ShoppingCart className={`h-3 w-3 sm:h-4 sm:w-4 ${isRTL ? "ml-1" : "mr-1"}`} />
+                          <span className="hidden sm:inline">{t.addToCart}</span>
+                          <span className="sm:hidden">Cart</span>
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="flex-1 bg-accent text-black hover:bg-white text-[10px] sm:text-xs h-8 sm:h-9"
+                          onClick={(e) => handleBuyNow(product, e)}
+                          disabled={product.stock_quantity <= 0}
+                        >
+                          <Zap className={`h-3 w-3 sm:h-4 sm:w-4 ${isRTL ? "ml-1" : "mr-1"}`} />
+                          <span className="hidden sm:inline">{t.buyNow}</span>
+                          <span className="sm:hidden">Buy</span>
+                        </Button>
+                      </div>
                     </CardFooter>
                   </Card>
                 </Link>
@@ -442,22 +501,18 @@ export default function Page() {
             </div>
           </motion.div>
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
+            initial={{ opacity: 0, x: isRTL ? -50 : 50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="text-center md:text-left"
+            className={`text-center ${isRTL ? "md:text-right" : "md:text-left"}`}
           >
             <h3 className="text-3xl sm:text-4xl lg:text-5xl italic mb-4 sm:mb-6">
-              BUILT BY
+              {t.builtBy}
               <br />
-              <span className="text-accent">A TRUE CHAMPION.</span>
+              <span className="text-accent">{t.trueChampion}</span>
             </h3>
             <p className="text-base sm:text-lg text-muted-foreground leading-relaxed font-medium">
-              Coach Remilaoui Ibrahim is more than just a fighter - he's a mentor who has shaped countless champions
-              in the Algerian combat sports scene. With years of experience in the ring and on the mat, he understands
-              what fighters truly need. GYM FOG was born from his passion to elevate combat sports in Algeria,
-              providing premium gear that meets the demanding standards of real fighters. Every product is tested
-              and approved by champions, for champions.
+              {t.coachBio}
             </p>
           </motion.div>
         </div>
@@ -467,23 +522,24 @@ export default function Page() {
       <section id="contact" className="py-12 sm:py-24 bg-black border-t border-white/10">
         <div className="container mx-auto px-4 max-w-2xl">
           <div className="text-center mb-8 sm:mb-12">
-            <h3 className="text-3xl sm:text-5xl italic mb-2">CONTACT US</h3>
-            <p className="text-muted-foreground font-bold tracking-widest text-[10px] sm:text-xs">DIRECT LINE TO THE HQ</p>
+            <h3 className="text-3xl sm:text-5xl italic mb-2">{t.contactUs}</h3>
+            <p className="text-muted-foreground font-bold tracking-widest text-[10px] sm:text-xs">{t.directLine}</p>
           </div>
           <div className="space-y-4">
             <Textarea
-              placeholder="WRITE YOUR MESSAGE HERE..."
-              className="min-h-[120px] sm:min-h-[150px] bg-muted border-none text-base sm:text-lg p-4 sm:p-6 focus-visible:ring-accent"
+              placeholder={t.writeMessage}
+              className={`min-h-[120px] sm:min-h-[150px] bg-muted border-none text-base sm:text-lg p-4 sm:p-6 focus-visible:ring-accent ${isRTL ? "text-right" : ""}`}
               value={whatsappMessage}
               onChange={(e) => setWhatsappMessage(e.target.value)}
+              dir={isRTL ? "rtl" : "ltr"}
             />
             <Button
               size="lg"
               className="w-full bg-accent text-black hover:bg-white text-base sm:text-xl h-12 sm:h-16 font-display italic"
               onClick={() => openWhatsApp(whatsappMessage)}
             >
-              <MessageCircle className="w-5 h-5 mr-2" />
-              SEND WHATSAPP MESSAGE
+              <MessageCircle className={`w-5 h-5 ${isRTL ? "ml-2" : "mr-2"}`} />
+              {t.sendWhatsApp}
             </Button>
           </div>
         </div>
@@ -521,32 +577,33 @@ export default function Page() {
                 </Button>
               </div>
             </div>
-            <div className="text-center sm:text-left">
-              <h5 className="font-bold mb-4 sm:mb-6 text-accent text-sm">RESOURCES</h5>
+            <div className={`text-center ${isRTL ? "sm:text-right" : "sm:text-left"}`}>
+              <h5 className="font-bold mb-4 sm:mb-6 text-accent text-sm">{t.resources}</h5>
               <ul className="space-y-3 sm:space-y-4 text-xs sm:text-sm font-medium">
-                <li><a href="#" className="hover:text-accent">SIZE GUIDES</a></li>
-                <li><a href="#" className="hover:text-accent">SHIPPING POLICY</a></li>
-                <li><a href="#contact" className="hover:text-accent">CONTACT US</a></li>
-                <li><a href="#" className="hover:text-accent">BULK ORDERS</a></li>
+                <li><a href="#" className="hover:text-accent">{t.sizeGuides}</a></li>
+                <li><a href="#" className="hover:text-accent">{t.shippingPolicy}</a></li>
+                <li><a href="#contact" className="hover:text-accent">{t.contactUs}</a></li>
+                <li><a href="#" className="hover:text-accent">{t.bulkOrders}</a></li>
               </ul>
             </div>
-            <div className="text-center sm:text-left">
-              <h5 className="font-bold mb-4 sm:mb-6 text-accent text-sm">JOIN THE WAR</h5>
-              <p className="text-xs sm:text-sm text-muted-foreground mb-4 font-medium">SUBSCRIBE FOR DROP ALERTS</p>
-              <div className="flex gap-2 max-w-xs mx-auto sm:mx-0">
+            <div className={`text-center ${isRTL ? "sm:text-right" : "sm:text-left"}`}>
+              <h5 className="font-bold mb-4 sm:mb-6 text-accent text-sm">{t.joinTheWar}</h5>
+              <p className="text-xs sm:text-sm text-muted-foreground mb-4 font-medium">{t.subscribeAlerts}</p>
+              <div className={`flex gap-2 max-w-xs mx-auto ${isRTL ? "sm:ml-auto sm:mr-0 flex-row-reverse" : "sm:mx-0"}`}>
                 <input
-                  className="bg-black border border-white/10 px-3 sm:px-4 py-2 flex-1 text-xs sm:text-sm outline-none focus:border-accent min-w-0"
-                  placeholder="EMAIL ADDRESS"
+                  className={`bg-black border border-white/10 px-3 sm:px-4 py-2 flex-1 text-xs sm:text-sm outline-none focus:border-accent min-w-0 ${isRTL ? "text-right" : ""}`}
+                  placeholder={t.emailAddress}
+                  dir={isRTL ? "rtl" : "ltr"}
                 />
                 <Button className="bg-accent text-black font-bold rounded-none px-4 sm:px-6 text-xs sm:text-sm">GO</Button>
               </div>
             </div>
           </div>
-          <div className="pt-6 sm:pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4 text-[9px] sm:text-[10px] tracking-[0.2em] text-muted-foreground font-bold">
-            <p>2026 GYM FOG. ALL RIGHTS RESERVED.</p>
-            <div className="flex gap-4 sm:gap-8">
-              <a href="#" className="hover:text-accent">PRIVACY</a>
-              <a href="#" className="hover:text-accent">TERMS</a>
+          <div className={`pt-6 sm:pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4 text-[9px] sm:text-[10px] tracking-[0.2em] text-muted-foreground font-bold ${isRTL ? "sm:flex-row-reverse" : ""}`}>
+            <p>2026 GYM FOG. {t.allRightsReserved}</p>
+            <div className={`flex gap-4 sm:gap-8 ${isRTL ? "flex-row-reverse" : ""}`}>
+              <a href="#" className="hover:text-accent">{t.privacy}</a>
+              <a href="#" className="hover:text-accent">{t.terms}</a>
               <a href="#" className="hover:text-accent">ALGERIA</a>
             </div>
           </div>

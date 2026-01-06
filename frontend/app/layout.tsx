@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { CartProvider } from '@/lib/context/cart-context'
 import { FavoritesProvider } from '@/lib/context/favorites-context'
+import { LanguageProvider } from '@/lib/context/language-context'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
@@ -25,14 +26,16 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`font-sans antialiased`}>
-        <CartProvider>
-          <FavoritesProvider>
-            {children}
-            <Toaster />
-          </FavoritesProvider>
-        </CartProvider>
+        <LanguageProvider>
+          <CartProvider>
+            <FavoritesProvider>
+              {children}
+              <Toaster />
+            </FavoritesProvider>
+          </CartProvider>
+        </LanguageProvider>
         <Analytics />
       </body>
     </html>
