@@ -13,13 +13,19 @@ DOCUMENTS_BUCKET_NAME = "documents"
 WA_SIM_BUCKET_NAME = "wa-sim"
 
 async def init_minio_client(
-    minio_host: str, minio_port: int, minio_root_user: str, minio_root_password: str
+    minio_host: str, minio_port: int, minio_root_user: str, minio_root_password: str, secure: bool = False
 ):
+    # For R2/S3: use just hostname without port when secure=True and port=443
+    if secure and minio_port == 443:
+        endpoint = minio_host
+    else:
+        endpoint = f"{minio_host}:{minio_port}"
+
     Bucket.client = Minio(
-        f"{minio_host}:{minio_port}",
+        endpoint,
         access_key=minio_root_user,
         secret_key=minio_root_password,
-        secure=False,
+        secure=secure,
     )
 
     for bucket_name in [IMAGES_BUCKET_NAME, DOCUMENTS_BUCKET_NAME, WA_SIM_BUCKET_NAME]:

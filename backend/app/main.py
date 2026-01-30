@@ -30,9 +30,8 @@ async def lifespan(app: FastAPI):
         minio_host=settings.MINIO_HOST,
         minio_port=settings.MINIO_PORT,
         minio_root_user=settings.MINIO_ROOT_USER,
-        minio_root_password=settings.MINIO_ROOT_PASSWORD
-        
-  
+        minio_root_password=settings.MINIO_ROOT_PASSWORD,
+        secure=settings.MINIO_SECURE,
     )
     yield
 
