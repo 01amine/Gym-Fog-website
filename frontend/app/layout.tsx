@@ -5,6 +5,7 @@ import { CartProvider } from '@/lib/context/cart-context'
 import { FavoritesProvider } from '@/lib/context/favorites-context'
 import { LanguageProvider } from '@/lib/context/language-context'
 import { Toaster } from '@/components/ui/sonner'
+import { KeepAlive } from '@/components/keep-alive'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -37,6 +38,7 @@ export default function RootLayout({
           </CartProvider>
         </LanguageProvider>
         <Analytics />
+        <KeepAlive />
       </body>
     </html>
   )
