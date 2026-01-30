@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: gym-fog-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    envVars:
+      - key: MONGO_URI
+        sync: false  # Set manually in Render dashboard
+      - key: MONGO_DB
+        value: gym_fog_db
+      - key: MINIO_HOST
+        sync: false  # Set manually (your S3-compatible storage host)
+      - key: MINIO_PORT
+        value: "443"
+      - key: MINIO_ROOT_USER
+        sync: false
+      - key: MINIO_ROOT_PASSWORD
+        sync: false
+      - key: MINIO_SECURE
+        value: "true"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        sync: false  # Set to your Vercel frontend URLs
+      - key: BASE_URL
+        sync: false  # Set to your Render backend URL
+      - key: ENV
+        value: production
+      - key: MAILJET_API_KEY
+        sync: false
+      - key: MAILJET_SECRET_KEY
+        sync: false
+      - key: MAIL_FROM_ADDRESS
+        sync: false
+    healthCheckPath: /docs

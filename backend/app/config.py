@@ -5,14 +5,22 @@ from fastapi_mail import ConnectionConfig
 
 
 class Settings(BaseSettings):
-    ALLOWED_ORIGINS: str = Field(default="https://editions-x2gc.vercel.app")
+    # Server config (Render provides PORT env variable)
+    PORT: int = Field(default=8000)
+
+    # CORS - Add your Vercel frontend URLs here
+    ALLOWED_ORIGINS: str = Field(default="http://localhost:3000,http://localhost:3001")
     @property
     def allowed_origins_list(self) -> list[str]:
         return [o.strip() for o in self.ALLOWED_ORIGINS.split(",") if o.strip()]
+
+    # MinIO/S3 Storage config
     MINIO_HOST: str = Field(default="minio")
     MINIO_PORT: int = Field(default=9000)
     MINIO_ROOT_USER: str = Field(default="minioadmin")
-    MINIO_ROOT_PASSWORD: str = Field(default="minioadmin123") 
+    MINIO_ROOT_PASSWORD: str = Field(default="minioadmin123")
+    MINIO_SECURE: bool = Field(default=False)  # Set to True for S3/production
+
     SECRET_KEY: str = "your-very-secret-key"
     PASSWORD_RESET_TOKEN_EXPIRES: int = 3600  # 1 hour
     BASE_URL: str = Field(default="http://localhost:8000")

@@ -7,6 +7,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
     remotePatterns: [
+      // Local development
       {
         protocol: 'http',
         hostname: 'localhost',
@@ -18,6 +19,21 @@ const nextConfig = {
       {
         protocol: 'http',
         hostname: 'backend',
+      },
+      // Production - Render backend
+      {
+        protocol: 'https',
+        hostname: '*.onrender.com',
+      },
+      // Production - S3/Cloud storage
+      {
+        protocol: 'https',
+        hostname: '*.amazonaws.com',
+      },
+      // Allow all HTTPS for flexibility
+      {
+        protocol: 'https',
+        hostname: '**',
       },
     ],
   },
