@@ -4,6 +4,10 @@ import client from "../api/clients";
 
 export async function login(payload :authRegsiter): Promise<void> {
     const {data} = await client.post(API_ENDPOINTS.AUTH.LOGIN, payload);
+    // Store token in localStorage for cross-origin auth
+    if (data?.access_token) {
+        localStorage.setItem('access_token', data.access_token);
+    }
 }
 export async function get_me(): Promise<User> {
   const { data } = await client.get<UserApiResponse>(API_ENDPOINTS.AUTH.ME);
@@ -14,6 +18,8 @@ export async function get_me(): Promise<User> {
 }
 export async function logout(): Promise<void> {
     await client.post(API_ENDPOINTS.AUTH.LOGOUT);
+    // Clear token from localStorage
+    localStorage.removeItem('access_token');
 }
 
 export async function getUserbyId(userId: string): Promise<UserApiResponse> {

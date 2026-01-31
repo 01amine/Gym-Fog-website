@@ -1,7 +1,11 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from fastapi.staticfiles import StaticFiles
+import logging
 from app.config import settings
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 from pymongo import AsyncMongoClient
 from beanie import init_beanie
 from app.models.user import User
@@ -25,6 +29,14 @@ async def init_mongo():
     await init_beanie(database=mongo_db, document_models=[User, Product, Category, Order])
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Log config for debugging
+    logger.info(f"ENV: {settings.ENV}")
+    logger.info(f"MINIO_HOST: {settings.MINIO_HOST}")
+    logger.info(f"MINIO_PORT: {settings.MINIO_PORT}")
+    logger.info(f"MINIO_SECURE: {settings.MINIO_SECURE}")
+    logger.info(f"MONGO_URI: {settings.MONGO_URI[:30]}...")
+    logger.info(f"ALLOWED_ORIGINS: {settings.ALLOWED_ORIGINS}")
+
     await init_mongo()
     await init_minio_client(
         minio_host=settings.MINIO_HOST,

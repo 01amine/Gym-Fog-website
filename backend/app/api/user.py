@@ -53,7 +53,7 @@ async def register_user(data: UserCreate):
         value=access_token,
         httponly=True,
         secure=settings.ENV == "production",
-        samesite="lax",
+        samesite="none" if settings.ENV == "production" else "lax",
         max_age=24 * 60 * 60,  # 1day
     )
     return response
@@ -73,7 +73,7 @@ async def login_user(credentials: UserLogin):
         value=access_token,
         httponly=True,
         secure=settings.ENV == "production",
-        samesite="lax",
+        samesite="none" if settings.ENV == "production" else "lax",
         max_age=24 * 60 * 60,
     )
     return response
@@ -91,7 +91,7 @@ async def logout_user():
         key="access_token",
         httponly=True,
         secure=settings.ENV == "production",
-        samesite="lax",
+        samesite="none" if settings.ENV == "production" else "lax",
     )
     return response
 
