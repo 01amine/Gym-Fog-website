@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Geist, Geist_Mono, Noto_Sans_Arabic } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { CartProvider } from '@/lib/context/cart-context'
 import { FavoritesProvider } from '@/lib/context/favorites-context'
@@ -10,6 +10,11 @@ import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
+const notoSansArabic = Noto_Sans_Arabic({
+  subsets: ["arabic"],
+  variable: "--font-arabic",
+  weight: ["400", "500", "600", "700"],
+});
 
 export const metadata: Metadata = {
   title: 'GYM FOG - Combat Sports Gear',
@@ -28,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`font-sans antialiased`}>
+      <body className={`font-sans antialiased ${notoSansArabic.variable}`}>
         <LanguageProvider>
           <CartProvider>
             <FavoritesProvider>
